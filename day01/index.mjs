@@ -7,7 +7,7 @@ const totalCalories = (c) => {
   });
 };
 
-const inputHandle = await open ('input');
+const inputHandle = await open('input');
 const inputStream = inputHandle.createReadStream();
 const reader = createInterface({
   input: inputStream,
