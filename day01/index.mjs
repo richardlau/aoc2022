@@ -2,7 +2,7 @@ import { open } from 'node:fs/promises';
 import { createInterface } from 'node:readline/promises'
 
 const totalCalories = (c) => {
-  return c.reduce((accumulator, n) =>{
+  return c.reduce((accumulator, n) => {
     return accumulator + n;
   });
 };
