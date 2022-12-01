@@ -21,6 +21,7 @@ for await (const line of reader) {
     calories[i].push(parseInt(line));
   }
 }
+inputHandle.close();
 const totals = calories.map((x) => totalCalories(x));
 const topThree = totals.sort().slice(-3);
 console.log(totalCalories(topThree));
