@@ -1,5 +1,4 @@
-import { open } from 'node:fs/promises';
-import { createInterface } from 'node:readline/promises';
+import { readFile } from 'node:fs/promises';
 
 const scores = {
   A: { X: 3, Y: 4, Z: 8 },
@@ -7,15 +6,8 @@ const scores = {
   C: { X: 2, Y: 6, Z: 7 },
 };
 
-const inputHandle = await open('input');
-const inputStream = inputHandle.createReadStream();
-const reader = createInterface({
-  input: inputStream,
-})
-let total = 0;
-for await (const line of reader) {
-  const [ p1, p2 ] = line.split(' ');
-  total += scores[p1][p2];
-}
-inputHandle.close();
-console.log(total);
+const input = await readFile('input', { encoding: 'utf8' });
+console.log(input.split('\n').reduce((score, move) => {
+  const [ p1, outcome ] = move.split(' ');
+  return score + scores[p1][outcome];
+}, 0));
