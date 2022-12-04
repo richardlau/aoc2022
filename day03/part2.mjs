@@ -8,10 +8,11 @@ const sum = (numbers) => numbers.reduce((total, n) => total + n, 0);
 
 const input = await readFile('input', { encoding: 'utf8' });
 console.log(sum(input.split('\n').reduce((result, sack, i) => {
+    const index = Math.trunc(i / 3);
     if (i % 3 == 0) {
-      result[Math.floor(i / 3)] = [];
+      result[index] = [];
     }
-    result[Math.floor(i / 3)].push(sack);
+    result[index].push(sack);
     return result;
   }, []).map(([sack1, sack2, sack3]) => {
   for (const item of sack1) {
