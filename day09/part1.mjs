@@ -1,25 +1,24 @@
 import { readFile } from 'node:fs/promises';
 
 const coordinates = ([x, y]) => `x${x}y${y}`;
-const isAdjacent = (hx, hy, tx, ty) => {
+const isAdjacent = ([hx, hy], [tx, ty]) => {
   return [-1, 0, 1].includes(hx - tx) && [-1, 0, 1].includes(hy - ty);
 };
 const moveKnot = ([hx, hy], [tx, ty]) => {
   const dx = hx - tx;
   const dy = hy - ty;
-  if (isAdjacent(hx, hy, tx, ty)) {
+  if (isAdjacent([hx, hy], [tx, ty])) {
     return [tx, ty]; // Adjacent, do not move tail.
   }
-  let rx = tx;
-  let ry = ty;
-  rx += dx === 0 ? 0 : dx / Math.abs(dx);
-  ry += dy === 0 ? 0 : dy / Math.abs(dy);
-  return [rx, ry];
+  return [
+    tx + (dx === 0 ? 0 : dx / Math.abs(dx)),
+    ty + (dy === 0 ? 0 : dy / Math.abs(dy)),
+  ];
 };
 
 const input = await readFile('input', { encoding: 'utf8' });
+// Head is knots[0], tail is knots[knots.length - 1].
 let knots = [...new Array(2)].map((_) => [0, 0]);
-
 const tailPositions = new Set();
 tailPositions.add(coordinates(knots[knots.length - 1]));
 for (const move of input.split(/\r\n|\r|\n/)) {
@@ -35,4 +34,4 @@ for (const move of input.split(/\r\n|\r|\n/)) {
     tailPositions.add(coordinates(knots[knots.length - 1]));
   }
 };
-console.log([...tailPositions].length);
+console.log(tailPositions.size);
