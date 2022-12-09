@@ -20,8 +20,8 @@ const moveKnot = ([hx, hy], [tx, ty]) => {
 const input = await readFile('input', { encoding: 'utf8' });
 let knots = [...new Array(10)].map((_) => [0, 0]);
 
-const tailPositions = new Map();
-tailPositions.set(coordinates(knots[knots.length - 1]), 1);
+const tailPositions = new Set();
+tailPositions.add(coordinates(knots[knots.length - 1]));
 for (const move of input.split(/\r\n|\r|\n/)) {
   const [ direction, steps ] = move.split(' ')
                                .map((v, i) => i === 1 ? Number(v) : v);
@@ -32,8 +32,7 @@ for (const move of input.split(/\r\n|\r|\n/)) {
     for (let j = 1; j < knots.length; j++) {
       knots[j] = moveKnot(knots[j - 1], knots[j]);
     }
-    const newcoords = coordinates(knots[knots.length - 1]);
-    tailPositions.set(newcoords, 1 + (tailPositions.get(newcoords) ?? 0));
+    tailPositions.add(coordinates(knots[knots.length - 1]));
   }
 };
-console.log([...tailPositions.keys()].length);
+console.log([...tailPositions].length);
