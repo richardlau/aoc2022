@@ -20,28 +20,21 @@ const coveredRangesForY = (sensors, queryRow) => {
     }
   };
   // Merge covered ranges.
-  const covered = new Set();
-  const processQueue = Array.from(intersections);
+  const covered = [];
+  const processQueue = Array.from(intersections).sort(([ ax ], [ bx ]) => ax - bx);
   while (processQueue.length > 0) {
-    const [i0, i1] = processQueue.pop();
-    const overlaps = [...covered].filter(([x0, x1]) => {
-      return (x0 <= i0 && i0 <= x1) ||
-        (x0 <= i1 && i1 <= x1) ||
-        (i0 <= x0 && x0 <= i1) ||
-        (i0 <= x1 && x1 <= i1);
-    });
-    if (overlaps.length === 0) {
-      covered.add([i0, i1]);
-    }
-    for (const overlap of overlaps) {
-      const [x0, x1] = overlap;
-      if (!(i0 === x0 && i1 === x1)) {
-        overlap[0] = i0 < overlap[0] ? i0 : overlap[0];
-        overlap[1] = i1 > overlap[1] ? i1 : overlap[1];
-        processQueue.push(overlap);
-        covered.delete(overlap);
-      };
+    const [ i0, i1 ] = processQueue.shift();
+    const lastRange = covered[ covered.length - 1 ];
+    if (lastRange === undefined) {
+      covered.push([ i0, i1 ]);
+      continue;
     };
+    if (i0 <= lastRange[1]) {
+      // Overlap. Extend previous range.
+      lastRange[1] = lastRange[1] >= i1 ? lastRange[1] : i1;
+      continue;
+    };
+    covered.push([ i0, i1 ]);
   };
   return covered;
 }
@@ -55,8 +48,8 @@ for (const line of input.split(/\r\n|\r|\n/)) {
   sensors.set(asStringXY([ sx, sy ]), distance(sx, sy, bx, by));
 };
 for (let y = 0; y <= searchBoundary; y++) {
-  const covered = [...coveredRangesForY(sensors, y)].sort(([ ax ], [ bx ]) => ax - bx);
-  if ([...covered].reduce((total, [ x0, x1 ]) => total + x1 - x0 + 1, 0) === searchBoundary + 1) {
+  const covered = coveredRangesForY(sensors, y);
+  if (covered.length === 1 && covered[0][0] === 0 && covered[0][1] === searchBoundary) {
     continue;
   };
   let x = 0;

@@ -27,28 +27,21 @@ for (const [ sensor, distance ] of sensors) {
   }
 };
 // Merge covered ranges.
-const covered = new Set();
-const processQueue = Array.from(intersections);
+const covered = [];
+const processQueue = Array.from(intersections).sort(([ ax ], [ bx ]) => ax - bx);
 while (processQueue.length > 0) {
-  const [ i0, i1 ] = processQueue.pop();
-  const overlaps = [...covered].filter(([ x0, x1 ]) => {
-    return (x0 <= i0 && i0 <= x1) ||
-      (x0 <= i1 && i1 <= x1) ||
-      (i0 <= x0 && x0 <= i1) ||
-      (i0 <= x1 && x1 <= i1);
-  });
-  if (overlaps.length === 0) {
-    covered.add([ i0, i1 ]);
-  }
-  for (const overlap of overlaps) {
-    const [ x0, x1 ] = overlap;
-    if (!(i0 === x0 && i1 === x1)) {
-      overlap[0] = i0 < overlap[0] ? i0 : overlap[0];
-      overlap[1] = i1 > overlap[1] ? i1 : overlap[1];
-      processQueue.push(overlap);
-      covered.delete(overlap);
-    };
+  const [ i0, i1 ] = processQueue.shift();
+  const lastRange = covered[ covered.length - 1 ];
+  if (lastRange === undefined) {
+    covered.push([ i0, i1 ]);
+    continue;
   };
+  if (i0 <= lastRange[1]) {
+    // Overlap. Extend previous range.
+    lastRange[1] = lastRange[1] >= i1 ? lastRange[1] : i1;
+    continue;
+  };
+  covered.push([ i0, i1 ]);
 };
-const scanned = [...covered].reduce((total, [ x0, x1 ]) => x1 - x0 + 1, 0);
+const scanned = covered.reduce((total, [ x0, x1 ]) => x1 - x0 + 1, 0);
 console.log(scanned - [...beacons].filter((beacon) => beacon.endsWith(`y${queryRow}`)).length);
