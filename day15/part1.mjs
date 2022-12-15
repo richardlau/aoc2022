@@ -18,14 +18,37 @@ for (const line of input.split(/\r\n|\r|\n/)) {
   sensors.set(asStringXY([ sx, sy ]), distance(sx, sy, bx, by));
   beacons.add(asStringXY([ bx, by ]));
 };
-const covered = new Set();
+const intersections = [];
 for (const [ sensor, distance ] of sensors) {
   const [ sx, sy ] = asXYArray(sensor);
   if (Math.abs(queryRow - sy) <= distance) {
     const xdiff = distance - Math.abs(queryRow - sy);
-    for (let x = sx - xdiff; x <= sx + xdiff; x++) {
-      covered.add(asStringXY([x, queryRow ]));
-    };
+    intersections.push([ sx - xdiff, sx + xdiff ]);
   }
 };
-console.log(covered.size - [...beacons].filter((beacon) => beacon.endsWith(`y${queryRow}`)).length);
+// Merge covered ranges.
+const covered = new Set();
+const processQueue = Array.from(intersections);
+while (processQueue.length > 0) {
+  const [ i0, i1 ] = processQueue.pop();
+  const overlaps = [...covered].filter(([ x0, x1 ]) => {
+    return (x0 <= i0 && i0 <= x1) ||
+      (x0 <= i1 && i1 <= x1) ||
+      (i0 <= x0 && x0 <= i1) ||
+      (i0 <= x1 && x1 <= i1);
+  });
+  if (overlaps.length === 0) {
+    covered.add([ i0, i1 ]);
+  }
+  for (const overlap of overlaps) {
+    const [ x0, x1 ] = overlap;
+    if (!(i0 === x0 && i1 === x1)) {
+      overlap[0] = i0 < overlap[0] ? i0 : overlap[0];
+      overlap[1] = i1 > overlap[1] ? i1 : overlap[1];
+      processQueue.push(overlap);
+      covered.delete(overlap);
+    };
+  };
+};
+const scanned = [...covered].reduce((total, [ x0, x1 ]) => x1 - x0 + 1, 0);
+console.log(scanned - [...beacons].filter((beacon) => beacon.endsWith(`y${queryRow}`)).length);
