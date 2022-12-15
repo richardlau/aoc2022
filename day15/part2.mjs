@@ -13,7 +13,10 @@ const coveredRangesForY = (sensors, queryRow) => {
     const [sx, sy] = asXYArray(sensor);
     if (Math.abs(queryRow - sy) <= distance) {
       const xdiff = distance - Math.abs(queryRow - sy);
-      intersections.push([sx - xdiff, sx + xdiff]);
+      intersections.push([
+        sx - xdiff < 0 ? 0 : sx - xdiff,
+        sx + xdiff > searchBoundary ? searchBoundary : sx + xdiff,
+      ]);
     }
   };
   // Merge covered ranges.
@@ -53,6 +56,9 @@ for (const line of input.split(/\r\n|\r|\n/)) {
 };
 for (let y = 0; y <= searchBoundary; y++) {
   const covered = [...coveredRangesForY(sensors, y)].sort(([ ax ], [ bx ]) => ax - bx);
+  if ([...covered].reduce((total, [ x0, x1 ]) => total + x1 - x0 + 1, 0) === searchBoundary + 1) {
+    continue;
+  };
   let x = 0;
   for (const [ x0, x1 ] of covered) {
     if (x0 <= x && x <= x1) {
