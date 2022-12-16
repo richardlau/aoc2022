@@ -10,7 +10,7 @@ const distance = (x0, y0, x1, y1) => Math.abs(x1 - x0) + Math.abs(y1 - y0);
 const sensors = new Map();
 const beacons = new Set();
 
-const queryRow = process.argv[ 2 ] ?? 2000000;
+const queryRow = Number(process.argv[ 2 ]) ?? 2000000;
 const inputFile = process.argv[ 3 ] ?? 'input';
 const input = await readFile(inputFile, { encoding: 'utf8' });
 for (const line of input.split(/\r\n|\r|\n/)) {
