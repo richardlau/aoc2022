@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 
 const inputFile = process.argv[ 2 ] ?? 'input';
 const input = await readFile(inputFile, { encoding: 'utf8' });
-const encrypted = input.split(/\r\n|\r|\n/).map((line) => { return { value: Number(line) }});
+const encrypted = input.split(/\r\n|\r|\n/).map((line) => { return { value: Number(line) * 811589153 }});
 let zero;
 for (let i = 0; i < encrypted.length; i++) {
   encrypted[ i ].prev = (i === 0) ? encrypted[ encrypted.length - 1 ] : encrypted[ i - 1 ];
@@ -18,23 +18,25 @@ const valueAfterZero = (index) => {
   };
   return result.value;
 };
-for (const item of encrypted) {
-  const direction = item.value / Math.abs(item.value);
-  for (let i = 0; i !== item.value % (encrypted.length - 1) ; i = i + direction) {
-    const { next, prev } = item;
-    prev.next = next;
-    next.prev = prev;
-    if (direction > 0) {
-      item.next = next.next;
-      item.prev = next;
-      next.next.prev = item;
-      next.next = item;
-    };
-    if (direction < 0) {
-      item.prev = prev.prev;
-      item.next = prev;
-      prev.prev.next = item;
-      prev.prev = item;
+for (let rounds = 0; rounds < 10; rounds++) {
+  for (const item of encrypted) {
+    const direction = item.value / Math.abs(item.value);
+    for (let i = 0; i !== item.value % (encrypted.length - 1); i = i + direction) {
+      const { next, prev } = item;
+      prev.next = next;
+      next.prev = prev;
+      if (direction > 0) {
+        item.next = next.next;
+        item.prev = next;
+        next.next.prev = item;
+        next.next = item;
+      };
+      if (direction < 0) {
+        item.prev = prev.prev;
+        item.next = prev;
+        prev.prev.next = item;
+        prev.prev = item;
+      };
     };
   };
 };
