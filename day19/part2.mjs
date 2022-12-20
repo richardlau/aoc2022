@@ -3,45 +3,18 @@ import { readFile } from 'node:fs/promises';
 const inputFile = process.argv[ 2 ] ?? 'input';
 const input = await readFile(inputFile, { encoding: 'utf8' });
 const encrypted = input.split(/\r\n|\r|\n/).map((line) => { return { value: Number(line) * 811589153 }});
-let zero;
-for (let i = 0; i < encrypted.length; i++) {
-  encrypted[ i ].prev = (i === 0) ? encrypted[ encrypted.length - 1 ] : encrypted[ i - 1 ];
-  encrypted[ i ].next = (i === encrypted.length - 1) ? encrypted[ 0 ] : encrypted[ i + 1 ];
-  if (encrypted[ i ].value === 0) {
-    zero = encrypted[ i ];
-  };
-};
-const valueAfterZero = (index) => {
-  let result = zero;
-  for (let i = 0; i < index; i++) {
-    result = result.next;
-  };
-  return result.value;
-};
-for (let rounds = 0; rounds < 10; rounds++) {
+const decrypted = Array.from(encrypted);
+for (let rounds = 10; rounds > 0; rounds--) {
   for (const item of encrypted) {
-    const direction = item.value / Math.abs(item.value);
-    for (let i = 0; i !== item.value % (encrypted.length - 1); i = i + direction) {
-      const { next, prev } = item;
-      prev.next = next;
-      next.prev = prev;
-      if (direction > 0) {
-        item.next = next.next;
-        item.prev = next;
-        next.next.prev = item;
-        next.next = item;
-      };
-      if (direction < 0) {
-        item.prev = prev.prev;
-        item.next = prev;
-        prev.prev.next = item;
-        prev.prev = item;
-      };
-    };
+    const index = decrypted.indexOf(item);
+    let newIndex = (index + item.value) % (decrypted.length - 1);
+    decrypted.splice(index, 1);
+    decrypted.splice(newIndex, 0, item);
   };
 };
+const zeroIndex = decrypted.findIndex(({ value }) => value === 0);
 const coordinates =
-  valueAfterZero(1000) +
-  valueAfterZero(2000) +
-  valueAfterZero(3000);
+  decrypted[ (zeroIndex + 1000) % decrypted.length ].value +
+  decrypted[ (zeroIndex + 2000) % decrypted.length ].value +
+  decrypted[ (zeroIndex + 3000) % decrypted.length ].value;
 console.log(coordinates);
