@@ -15,7 +15,7 @@ const action = (operationText) => {
     default: console.error(`Unable to parse '${operationText}'`);
   };
 };
-const getMonkey = (monkey) =>{
+const getMonkey = (monkey) => {
   return monkeys.get(monkey)();
 };
 
