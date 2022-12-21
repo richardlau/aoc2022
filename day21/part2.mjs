@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 
 const monkeyParser = /(?<monkey>\w+):\s*(?<action>\d+|\w+\s*[\+\-\*\/]\s*\w+)/gm
 const operationParser = /(?<number>\d+)|(?<monkey1>\w+)\s*(?<op>[\+\-\*\/])\s*(?<monkey2>\w+)/;
-const getMonkey = (monkey) =>{
+const getMonkey = (monkey) => {
   return monkeys.get(monkey).action();
 };
 
@@ -14,6 +14,7 @@ for (const parsed of input.matchAll(monkeyParser)) {
   const { monkey1, monkey2, number, op } = operationParser.exec(monkey.action).groups;
   let action;
   if (number !== undefined) {
+    // Intercept and ignore value for 'humn'.
     action = () => monkey.monkey === 'humn' ? NaN : Number(number);
   };
   if (action === undefined) {
@@ -28,11 +29,18 @@ for (const parsed of input.matchAll(monkeyParser)) {
   monkeys.set(monkey.monkey, {
     action,
     monkey1,
+    // Rewrite 'root'. monkey1 = monkey2 is equivalent to 0 = monkey1 - monkey2.
     op: (monkey.monkey === 'root') ? '-' : op,
     monkey2,
   });
 };
 
+// Start with value === 0 === 'root', and 'root' === operand1 - operand2.
+// Since we set up 'humn' as NaN, evaluating 'operand1 - operand2' will result
+// in NaN. We work out which of operand1 or operand2 evaluates to NaN and
+// update the "unknown" variable to point to it, also adjusting "value" by
+// the other operand based on the mathematical operation. Keep looping until
+// the "unsolved" variable is 'humn'.
 let unsolved = 'root';
 let value = 0;
 do {
