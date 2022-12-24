@@ -37,9 +37,10 @@ let elves = input.split(/\r\n|\r|\n/).flatMap((line, i) => {
   return [...line.matchAll(/#/gm)].map(({index}) => asStringXY([ index, i ]));
 });
 
-for (let round = 0; round < 10; round++) {
-  const proposedMoves = elves.map((elf) => {
-    const [ ex, ey ] = asArrayXY(elf);
+for (let round = 1; round <= 10; round++) {
+  const proposedMoves = new Map();
+  for (let i = 0; i < elves.length; i++) {
+    const [ ex, ey ] = asArrayXY(elves[ i ]);
     const validMoves = [];
     for (const check of checks) {
       const adjacent = check.map(([ dx, dy ]) => asStringXY([ ex + dx, ey + dy ]));
@@ -48,17 +49,21 @@ for (let round = 0; round < 10; round++) {
       };
     };
     if (validMoves.length > 0 && validMoves.length < checks.length) {
-      return validMoves[ 0 ];
+      const indices = proposedMoves.get(validMoves[ 0 ]) ?? [];
+      proposedMoves.set(validMoves[ 0 ], [ ...indices, i ]);
     };
-    return elf;
-  });
-  elves = proposedMoves.map((move, i) => {
-    return (proposedMoves.indexOf(move) === proposedMoves.lastIndexOf(move)) ?
-      move : elves[ i ];
-  });
+  };
+
+  let moved = 0;
+  for (const [ to, indices ] of proposedMoves.entries()) {
+    if (indices.length === 1) {
+      elves[ indices[ 0 ] ] = to;
+      moved++;
+    };
+  };
   checks.push(checks.shift());
-  console.log(`--- round ${round + 1} ---`)
-  printElves(elves);
+  // console.log(`--- round ${round} ---`)
+  // printElves(elves);
 };
 const [ [ minx, miny ], [ maxx, maxy ]] = getBounds(elves);
 console.log(`${(maxx - minx + 1) * (maxy - miny + 1) - elves.length}`)
