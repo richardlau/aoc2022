@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 const asStringXYT = (arrayXYT) => arrayXYT.join();
 const asArrayXYT = (stringXYT) => stringXYT.split(',').map(Number);
 const directions = [ [ 0, -1 ], [ 0, 1 ], [ -1, 0 ], [ 1, 0 ] ];
+const candidates = [ ...directions, [ 0, 0] ];
 const isBlocked = (x, y, time) => {
   if ((y === (startMap.length - 1) || y === 0) && startMap[ y ].charAt(x) === '.') {
     return false;
@@ -31,9 +32,9 @@ const shortestPath = (start, goal) => {
     const position = unvisited.shift();
     const pathToPosition = visited.get(position) ?? [position];
     visited.set(position, pathToPosition);
-    const [x, y, t] = asArrayXYT(position);
+    const [ x, y, t ] = asArrayXYT(position);
 
-    for (const [ dx, dy ] of [ ...directions, [ 0, 0 ] ]) {
+    for (const [ dx, dy ] of candidates) {
       const newx = x + dx;
       const newy = y + dy;
       const newPosition = asStringXYT([ newx, newy, t + 1 ]);
